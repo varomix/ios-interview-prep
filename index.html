@@ -1078,7 +1078,14 @@
       }
 
       .prob-link {
-        display: none;
+        width: 12px;
+        height: 12px;
+      }
+
+      .prob-link svg {
+        width: 11px;
+        height: 11px;
+        stroke-width: 2.2;
       }
 
       /* iOS cards */
@@ -5109,7 +5116,7 @@
         <div class="week-body-inner">
           <div class="week-goal">🎯 ${w.goal}</div>
           ${w.e4note ? `<div class="e4-note">🍊 E4 Note: ${w.e4note}</div>` : ''}
-          <div class="section-label">Problems — click to mark done · ↗ to open</div>
+          <div class="section-label">Problems — click to mark done · ↗ toopen</div>
           <div class="problems-list">${problemsHTML}</div>
           <div class="section-label">Additional Resources</div>
           <div class="resources">${resourcesHTML}</div>
