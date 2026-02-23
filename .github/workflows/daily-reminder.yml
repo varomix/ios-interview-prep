@@ -1,0 +1,63 @@
+name: Daily Study Reminder
+
+on:
+  schedule:
+    # Runs every day at 8:00 AM UTC (adjust to your timezone)
+    # For PST (UTC-8), use "0 16 * * *" for 8 AM PST
+    # For EST (UTC-5), use "0 13 * * *" for 8 AM EST
+    # For MST (UTC-7), use "0 1 * * *" for 6 PM MST
+    - cron: '0 1 * * *'
+  workflow_dispatch: # Allows manual trigger for testing
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Post daily reminder
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date();
+            const day = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+            const tips = [
+              "Solve 2 DSA problems with a 25-min timer each.",
+              "Review one iOS engineering card deeply today.",
+              "Practice explaining your solution out loud — Meta scores communication.",
+              "Check your spaced repetition queue for review items.",
+              "Write STAR stories for behavioral prep — don't skip this.",
+              "Do a timed mock: 2 problems in 45 minutes, no IDE autocomplete.",
+              "Study one Swift 100 Days lesson — consistency beats intensity.",
+            ];
+            const tip = tips[today.getDay()];
+
+            // Find or create the pinned reminder issue
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'daily-reminder',
+              state: 'open',
+            });
+
+            let issueNumber;
+            if (issues.data.length === 0) {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '📚 Daily Study Reminders',
+                body: 'This issue posts daily study reminders. Keep it open to receive notifications.\n\n🔔 You\'ll get a GitHub notification email each day.',
+                labels: ['daily-reminder'],
+              });
+              issueNumber = created.data.number;
+            } else {
+              issueNumber = issues.data[0].number;
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `## 📅 ${day}\n\nTime to study! Open your prep tool:\n👉 https://${context.repo.owner}.github.io/ios-interview-prep/\n\n**Today's tip:** ${tip}\n\n---\n*Reply to this comment to mark today as done.*`,
+            });
